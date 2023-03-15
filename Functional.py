@@ -1,14 +1,17 @@
 keras.backend.clear_session()
 
+aug = keras.models.Sequential([                                      # keras의 layer를 이용한 데이터 증강.
+    keras.layers.RandomFlip(),                                       # 레이어를 바로 집어넣으면 tf 2.9 이상의 버그로 fit 시간이 매우 느려짐
+    keras.layers.RandomRotation(0.1),                                # 별도 모델로 분리하여 사용하니 적용되는지는 모르겠지만 fit 시간이 느려지지 않았음
+    keras.layers.RandomZoom(0.1),
+    keras.layers.RandomTranslation(0.1, 0.1, 'nearest'),
+])
+
 il = keras.layers.Input(shape=(32, 32, 3))
 
-aug = keras.layers.RandomFlip()(il)             # 이미지 augmentation
-aug = keras.layers.RandomRotation(0.2)(aug)     # layer를 사용하는 방법.
-aug = keras.layers.RandomZoom(0.2)(aug)         # fit 시에만 활성화됨. predict 같은 경우는 아무것도 하지 않고 바로 넘겨주지 않을까?
+il = aug(il)
 
-ilr, ilg, ilb = tf.split(
-    aug, 3, axis=3, num=None, name='split'      # tensorflow의 split을 이용해서 채널을 분리.
-)
+ilr, ilg, ilb = tf.split(il, 3, axis=3, num=None, name='split')      # tensorflow의 split을 이용해서 채널을 분리.
 
 clr1 = keras.layers.Conv2D(32, (3,3), padding='same', activation='relu')(ilr)
 clg1 = keras.layers.Conv2D(32, (3,3), padding='same', activation='relu')(ilg)
@@ -33,7 +36,7 @@ hl = keras.layers.Conv2D(256, (3,3), padding='same', activation='relu')(hl)
 hl = keras.layers.Conv2D(256, (3,3), padding='same', activation='relu')(hl)
 hl = keras.layers.BatchNormalization()(hl)
 
-hl2 = keras.layers.Conv2D(64, (3,3), padding='same', activation='relu')(aug)
+hl2 = keras.layers.Conv2D(64, (3,3), padding='same', activation='relu')(il)
 hl2 = keras.layers.Conv2D(64, (3,3), padding='same', activation='relu')(hl2)
 hl2 = keras.layers.BatchNormalization()(hl2)
 hl2 = keras.layers.MaxPool2D()(hl2)
