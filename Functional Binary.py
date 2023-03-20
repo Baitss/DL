@@ -95,7 +95,7 @@ hl = keras.layers.Dense(32, activation='relu')(hl)
 hl = keras.layers.BatchNormalization()(hl)
 hl = keras.layers.PReLU()(hl)
 hl = keras.layers.Dropout(0.20)(hl)
-ol = keras.layers.Dense(1, 'sigmoid')(hl)                                     # 앞에서 구했던 총 클래스 수
+ol = keras.layers.Dense(1, 'sigmoid')(hl)
 
 model = keras.models.Model(il, ol)
 
